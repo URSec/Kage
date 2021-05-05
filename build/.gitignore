@@ -1,0 +1,6 @@
+# Ignore everything
+*
+
+# Except itself and the build scripts
+!.gitignore
+!build.llvm.sh
