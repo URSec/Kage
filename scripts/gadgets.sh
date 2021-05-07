@@ -14,7 +14,7 @@ then
 fi
 
 echo "Collecting function addresses..."
-functions=$(llvm-objdump -D aws_demos.elf | egrep "<.*?>:" aws_demos.s | cut -f 1 -d ' ')
+functions=$(llvm-objdump -D ${binary} | egrep "<.*?>:" | cut -f 1 -d ' ')
 
 echo "Collecting gadget addresses..."
 gadgets=$(ROPgadget --thumb --binary ${binary} |
