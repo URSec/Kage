@@ -34,7 +34,7 @@ export STRIP=llvm-strip
 
 cmake -G Ninja                                                              \
       -DCMAKE_BUILD_TYPE=Release                                            \
-      -DCMAKE_CXX_STANDARD=17                                               \
+      -DLLVM_CXX_STD=c++17                                                  \
       -DLLVM_ENABLE_PROJECTS="clang;lld"                                    \
       -DLLVM_TARGETS_TO_BUILD="ARM;X86"                                     \
       -DLLVM_ENABLE_ASSERTIONS=ON                                           \
