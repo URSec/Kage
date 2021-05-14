@@ -14,7 +14,7 @@ then
 fi
 
 echo "Collecting function addresses..."
-functions=$(llvm-objdump -D ${binary} | egrep "<.*?>:" | cut -f 1 -d ' ')
+functions=$(llvm-objdump -d ${binary} | egrep "<.*?>:" | cut -f 1 -d ' ')
 
 echo "Collecting gadget addresses..."
 gadgets=$(ROPgadget --thumb --binary ${binary} |
@@ -25,8 +25,9 @@ gadgets_addr=$(while IFS= read -r gadget; do
                        sed 's/^0*//'
                done <<< "$gadgets")
 
-echo "Finding function-aligned gadgets..."
+echo "Filtering gadgets reachable in Kage..."
 for gadget in $gadgets_addr
 do
-    grep $gadget <<< $functions | while read -r addr; do grep $addr <<< $gadgets; done
+    grep $gadget <<< $functions | while read -r addr; do grep $addr <<< $gadgets | egrep -v "lr$"; done
 done | sort | uniq
+
