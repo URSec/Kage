@@ -73,11 +73,6 @@ class CodeScanner(object):
                 inst = (byte1 << 8) | byte0
                 addr = text.header['sh_addr'] + i
 
-                # Skip our CFI label
-                if inst == 0xf870:
-                    i += 2
-                    continue
-
                 # Determine if it's a Thumb or Thumb-2 instruction
                 prefix = inst >> 11
                 if prefix == 0b11101 or prefix == 0b11110 or prefix == 0b11111:
@@ -87,6 +82,11 @@ class CodeScanner(object):
                     byte3 = text.data()[i + 3]
                     inst2 = (byte3 << 8) | byte2
                     inst = (inst << 16) | inst2
+
+                    # Skip our CFI label
+                    if inst == 0xf870f871:
+                        i += 4
+                        continue
 
                     self.__scan_4byte_inst(inst, addr)
                     if self.unaligned:
