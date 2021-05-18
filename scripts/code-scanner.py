@@ -112,7 +112,16 @@ class CodeScanner(object):
         msr_opcode = 0xf3808000
         msr_opcode_mask = 0xfff0f300
         if (inst & msr_opcode_mask) == msr_opcode:
-            print('[CS] MSR at 0x{:x}'.format(addr))
+            sysm_list = {
+                0x8: 'MSP',
+                0x9: 'PSP',
+                0x10: 'PRIMASK',
+                0x13: 'FAULTMASK',
+                0x14: 'CONTROL',
+            }
+            sysm = inst & 0xff
+            if sysm in sysm_list:
+                print('[CS] MSR {:s} at 0x{:x}'.format(sysm_list[sysm], addr))
 
         # Scan for BL (normal call) and B (tail call)
         bl_opcode = 0xf000d000
