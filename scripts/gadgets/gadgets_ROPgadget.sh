@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-while getopts ":bf:" flag
+while getopts ":baf:" flag
 do
     case "${flag}" in
         b) BATCH=true;;
+        a) ALL=true;;
         f) binary=${OPTARG};;
     esac
 done
@@ -18,11 +19,23 @@ fi
 if [ ! "$BATCH" = true ] ; then echo "Collecting gadget addresses..."; fi
 gadgets=$(ROPgadget --thumb --binary ${binary} |
               egrep ^0x)
+
+if [ "$ALL" = true ]
+then
+    while read -r gadget;
+    do 
+        echo $gadget
+    done <<< $gadgets
+    exit 0
+fi
+
 gadgets_addr=$(while IFS= read -r gadget; do
                    echo $gadget | cut -f 1 -d ' ' |
                        cut -c 3- |
                        sed 's/^0*//'
                done <<< "$gadgets")
+
+
 
 # Collect function start addresses
 if [ ! "$BATCH" = true ] ; then echo "Collecting function addresses..."; fi
