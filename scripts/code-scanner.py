@@ -8,6 +8,7 @@ from elftools.elf.elffile import ELFFile
 class CodeScanner(object):
     SECURE_APIS = [
         'xTaskCreateRestricted',
+        'vTaskFinishInit',
         'vTaskDelete',
         'vTaskDelayUntil',
         'vTaskDelay',
@@ -36,6 +37,9 @@ class CodeScanner(object):
         'xTaskResumeFromISR',
         'xTaskGenericNotifyFromISR',
         'vTaskNotifyGiveFromISR',
+
+        'vPortEnterCritical',
+        'vPortExitCritical',
     ]
 
     def __init__(self, binary, sections, unaligned):
@@ -57,7 +61,7 @@ class CodeScanner(object):
         self.__funcs = {}
         for sym in symtab.iter_symbols():
             if sym.entry['st_info']['type'] == 'STT_FUNC':
-                self.__funcs[sym.entry['st_value']] = {
+                self.__funcs[sym.entry['st_value'] & ~0x1] = {
                     'name': sym.name,
                     'section': self.__elf.get_section(sym.entry['st_shndx']).name,
                 }
@@ -73,11 +77,6 @@ class CodeScanner(object):
                 inst = (byte1 << 8) | byte0
                 addr = text.header['sh_addr'] + i
 
-                # Skip our CFI label
-                if inst == 0xf870:
-                    i += 2
-                    continue
-
                 # Determine if it's a Thumb or Thumb-2 instruction
                 prefix = inst >> 11
                 if prefix == 0b11101 or prefix == 0b11110 or prefix == 0b11111:
@@ -87,6 +86,11 @@ class CodeScanner(object):
                     byte3 = text.data()[i + 3]
                     inst2 = (byte3 << 8) | byte2
                     inst = (inst << 16) | inst2
+
+                    # Skip our CFI label
+                    if inst == 0xf871f870:
+                        i += 4
+                        continue
 
                     self.__scan_4byte_inst(inst, addr)
                     if self.unaligned:
@@ -110,15 +114,18 @@ class CodeScanner(object):
         if (inst & msr_opcode_mask) == msr_opcode:
             print('[CS] MSR at 0x{:x}'.format(addr))
 
-        # Scan for BL
+        # Scan for BL (normal call) and B (tail call)
         bl_opcode = 0xf000d000
         bl_opcode_mask = 0xf800d000
-        if (inst & bl_opcode_mask) == bl_opcode:
+        b_opcode = 0xf0009000
+        b_opcode_mask = 0xf800d000
+        if (inst & bl_opcode_mask) == bl_opcode or (inst & b_opcode_mask) == b_opcode:
             imm11 = inst & 0x7ff
             imm10 = (inst >> 16) & 0x3ff
             j2 = (inst >> 11) & 0x1
             j1 = (inst >> 13) & 0x1
             s = (inst >> 26) & 0x1
+            opcode = 'BL' if (inst & bl_opcode_mask) == bl_opcode else 'B'
 
             i1 = not(j1 ^ s)
             i2 = not(j2 ^ s)
@@ -126,13 +133,13 @@ class CodeScanner(object):
             # Sign extend with sign bit 25
             offset = (offset & ((1 << 24) - 1)) - (offset & (1 << 24))
 
-            dest = (addr + 4 + offset) | 1 # Thumb bit
+            dest = addr + 4 + offset
             priv_start = self.__privileged_section.header['sh_addr']
             priv_end = priv_start + self.__privileged_section.data_size
             if dest >= priv_start and dest < priv_end:
                 assert dest in self.__funcs, 'Jump to the middle of trusted function'
                 if self.__funcs[dest]['name'] not in CodeScanner.SECURE_APIS:
-                    print('[CS] BL {:s} at 0x{:x}'.format(self.__funcs[dest]['name'], addr))
+                    print('[CS] {:s} {:s} at 0x{:x}'.format(opcode, self.__funcs[dest]['name'], addr))
 
 
 def main():
