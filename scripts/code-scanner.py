@@ -8,6 +8,7 @@ from elftools.elf.elffile import ELFFile
 class CodeScanner(object):
     SECURE_APIS = [
         'xTaskCreateRestricted',
+        'vTaskFinishInit',
         'vTaskDelete',
         'vTaskDelayUntil',
         'vTaskDelay',
@@ -36,6 +37,9 @@ class CodeScanner(object):
         'xTaskResumeFromISR',
         'xTaskGenericNotifyFromISR',
         'vTaskNotifyGiveFromISR',
+
+        'vPortEnterCritical',
+        'vPortExitCritical',
     ]
 
     def __init__(self, binary, sections, unaligned):
