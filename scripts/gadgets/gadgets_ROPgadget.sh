@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
 
-while getopts b: flag
+while getopts ":bf:" flag
 do
     case "${flag}" in
-        b) binary=${OPTARG};;
+        b) BATCH=true;;
+        f) binary=${OPTARG};;
     esac
 done
 
 if [ -z "${binary}" ]
 then
-    echo "Usage: ./gadgets.sh -b <path_to_elf>"
+    echo "Usage: ./gadgets.sh [-b] -f <path_to_elf>"
     exit 1
 fi
 
 # Run ROPgadget to collect the set of gadget start addresses
-echo "Collecting gadget addresses..."
+if [ ! "$BATCH" = true ] ; then echo "Collecting gadget addresses..."; fi
 gadgets=$(ROPgadget --thumb --binary ${binary} |
               egrep ^0x)
 gadgets_addr=$(while IFS= read -r gadget; do
@@ -24,15 +25,20 @@ gadgets_addr=$(while IFS= read -r gadget; do
                done <<< "$gadgets")
 
 # Collect function start addresses
-echo "Collecting function addresses..."
-functions=$(llvm-objdump -d ${binary} | egrep "<.*?>:" | cut -f 1 -d ' ')
+if [ ! "$BATCH" = true ] ; then echo "Collecting function addresses..."; fi
+functions=$(llvm-objdump -d ${binary} |
+                egrep "<.*?>:" |
+                cut -f 1 -d ' ')
 
 # Collect instruction addresses that follow a call
-echo "Collecting addresses following callsites..."
-rettargets=$(llvm-objdump -d ${binary} | awk "/[[:space:]]bl/{getline; print}" | cut -f 2 -d " " | tr -d ":")
+if [ ! "$BATCH" = true ] ; then echo "Collecting addresses following callsites..."; fi
+rettargets=$(llvm-objdump -d ${binary} |
+                 awk "/[[:space:]]bl/{getline; print}" |
+                 cut -f 2 -d " " |
+                 tr -d ":")
 
 # Filter gadgets only reachable within Kage's restricted control flow  
-echo "Filtering gadgets unreachable in Kage ..."
+if [ ! "$BATCH" = true ] ; then echo "Filtering gadgets unreachable in Kage..."; fi
 REACHABLE=$(
     for addr in $gadgets_addr
     do
@@ -43,7 +49,7 @@ REACHABLE=$(
     done | sort | uniq)
 
 # Filter gadgets that depennd on instruction properties 
-echo "Filtering gadgets that rely on Kage-protected entities..."
+if [ ! "$BATCH" = true ] ; then echo "Filtering gadgets that rely on Kage-protected entities..."; fi
 USABLE=$(
     while read -r addr;
     do
@@ -57,7 +63,7 @@ USABLE=$(
     done <<< $REACHABLE)
 
 # Output
-echo "Usable gadgets:"
+if [ ! "$BATCH" = true ] ; then echo "Usable gadgets:"; fi
 while read -r gadget;
 do
     echo $gadget;
