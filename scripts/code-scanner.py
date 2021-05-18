@@ -49,7 +49,7 @@ class CodeScanner(object):
 
         self.__elf = ELFFile(open(binary, 'rb'))
         self.__privileged_section = self.__elf.get_section_by_name('privileged_functions')
-        assert self.__privileged_section, 'No section named privileged_function'
+        assert self.__privileged_section, 'No section named privileged_functions'
         for section in self.sections:
             text = self.__elf.get_section_by_name(section)
             assert text, 'Section does not exist: {:s}'.format(section)
