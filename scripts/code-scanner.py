@@ -84,7 +84,7 @@ class CodeScanner(object):
                     inst = (inst << 16) | inst2
 
                     # Skip our CFI label
-                    if inst == 0xf870f871:
+                    if inst == 0xf871f870:
                         i += 4
                         continue
 
