@@ -1,30 +1,45 @@
 #!/usr/bin/env bash
 
-while getopts ":bar:f:" flag
+while getopts ":f:bar:s:" flag
 do
     case "${flag}" in
+        f) binary=${OPTARG};;
         b) BATCH=true;;
         a) ALL=true;;
         r) range=${OPTARG};;
-        f) binary=${OPTARG};;
+        s) SAPI=$(cat ${OPTARG});;
     esac
 done
 
 if [ -z "${binary}" ]
 then
-    echo "Usage: ./gadgets.sh [-b] [-a] [-r 0x...-0x...] -f <path_to_elf>"
+    echo "Usage: ./gadgets.sh -f <path_to_elf> [-b] [-a] [-r 0x...-0x...] [-s <path_secure_api>]"
     exit 1
+fi
+
+# Collect secure API function addresses
+if [ ! "$BATCH" = true ] ; then echo "Collecting Secure API function addresses..."; fi
+if [ ! -z "$SAPI" ] ; then 
+    secure_api=$(llvm-objdump -d ${binary} |
+                     egrep "<.*?>:" |
+                     while read -r fun; do
+                         name=$(cut -f 2 -d ' ' <<< $fun | tr -d '<>:')
+                         if grep -q $name <<< $SAPI
+                         then
+                             echo -n $fun | cut -f 1 -d ' ' | sed 's/^0*//' | tr -d ' '
+                         fi
+                     done)
 fi
 
 # Run ROPgadget to collect the set of gadget start addresses
 if [ ! "$BATCH" = true ] ; then echo "Collecting gadget addresses..."; fi
 # Run ROPgadget over a specified range if provided
-if [ -z "${range}" ]
+if [ ! -z "${range}" ]
 then
-    gadgets=$(ROPgadget --thumb --binary ${binary} |
+    gadgets=$(ROPgadget --thumb --range "${range}" --binary ${binary} |
                   egrep ^0x)
 else
-    gadgets=$(ROPgadget --thumb --range "${range}" --binary ${binary} |
+    gadgets=$(ROPgadget --thumb --binary ${binary} |
                   egrep ^0x)
 fi
 
@@ -38,18 +53,28 @@ then
     exit 0
 fi
 
+# Cut addresses from gadget descriptions 
 gadgets_addr=$(while IFS= read -r gadget; do
                    echo $gadget | cut -f 1 -d ' ' |
                        cut -c 3- |
                        sed 's/^0*//'
                done <<< "$gadgets")
+# Identify Kage-trusted code region from binary
+trusted_region=$(readelf -S ${binary} |
+                   egrep -o privileged_f.*?$ |
+                   tr -s ' ' |
+                   cut -d ' ' -f 3,5)
+trusted_base=$(echo $trusted_region | cut -f 1 -d ' ')
+trusted_max=$(echo $trusted_region | 
+                  sed 's/ /+/' |
+                  awk '{print "obase=16;ibase=16;"$1}' |
+                  bc);
 
 # Collect function start addresses
 if [ ! "$BATCH" = true ] ; then echo "Collecting function addresses..."; fi
 functions=$(llvm-objdump -d ${binary} |
                 egrep "<.*?>:" |
                 cut -f 1 -d ' ')
-
 # Collect instruction addresses that follow a call
 if [ ! "$BATCH" = true ] ; then echo "Collecting addresses following callsites..."; fi
 rettargets=$(llvm-objdump -d ${binary} |
@@ -62,6 +87,9 @@ if [ ! "$BATCH" = true ] ; then echo "Filtering gadgets unreachable in Kage...";
 REACHABLE=$(
     for addr in $gadgets_addr
     do
+        # Skip gadgets in trusted region and not part of Secure API
+        grep $addr <<< $secure_api
+        if [[ "0x${addr}" -lt "0x${trusted_max}" && "0x${addr}" -gt "0x${trusted_base}" ]] ; then continue; fi
         # Select gadget addresses aligned with the start of functions
         grep $addr <<< $functions
         # Select gadget addresses aligned with return targets
