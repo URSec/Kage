@@ -1,25 +1,34 @@
 #!/usr/bin/env bash
 
-while getopts ":baf:" flag
+while getopts ":bar:f:" flag
 do
     case "${flag}" in
         b) BATCH=true;;
         a) ALL=true;;
+        r) range=${OPTARG};;
         f) binary=${OPTARG};;
     esac
 done
 
 if [ -z "${binary}" ]
 then
-    echo "Usage: ./gadgets.sh [-b] -f <path_to_elf>"
+    echo "Usage: ./gadgets.sh [-b] [-a] [-r 0x...-0x...] -f <path_to_elf>"
     exit 1
 fi
 
 # Run ROPgadget to collect the set of gadget start addresses
 if [ ! "$BATCH" = true ] ; then echo "Collecting gadget addresses..."; fi
-gadgets=$(ROPgadget --thumb --binary ${binary} |
-              egrep ^0x)
+# Run ROPgadget over a specified range if provided
+if [ -z "${range}" ]
+then
+    gadgets=$(ROPgadget --thumb --binary ${binary} |
+                  egrep ^0x)
+else
+    gadgets=$(ROPgadget --thumb --range "${range}" --binary ${binary} |
+                  egrep ^0x)
+fi
 
+# No filtering. Directly emit ROPgadget output and exit
 if [ "$ALL" = true ]
 then
     while read -r gadget;
@@ -34,8 +43,6 @@ gadgets_addr=$(while IFS= read -r gadget; do
                        cut -c 3- |
                        sed 's/^0*//'
                done <<< "$gadgets")
-
-
 
 # Collect function start addresses
 if [ ! "$BATCH" = true ] ; then echo "Collecting function addresses..."; fi
@@ -66,6 +73,8 @@ if [ ! "$BATCH" = true ] ; then echo "Filtering gadgets that rely on Kage-protec
 USABLE=$(
     while read -r addr;
     do
+        # Skip current line if it's empty
+        if [ -z "${addr}" ]; then continue; fi
         # Filter gadgets that rely on the Kage-protected link register
         FOUND=$(grep $addr <<< $gadgets | egrep -v "lr$")
         # Check if the address isn't filtered
