@@ -1,8 +1,29 @@
 #!/usr/bin/env bash
 
-while getopts ":f:bar:s:" flag
+
+usage() {
+  cat <<EOF
+
+Usage: $(basename "${BASH_SOURCE[0]}") [-h] -f <path_to_file> [OPTIONS]"
+
+This script produces a list of Kage-reachable gadgets for a given elf file using ROPgadget. 
+
+Available options:
+
+-h      Print this help and exit
+-b      Omit procesing status prints
+-a      Emit all gadgets, even those unreachable in Kage
+-r 0x..-0x..              Emit gadgets within a specified address range
+-s <secure_api_desc>      Specify a file containing newline separated names of reachable Secure API functions  
+
+EOF
+  exit
+}
+
+while getopts ":hf:bar:s:" flag
 do
     case "${flag}" in
+        h) usage;;
         f) binary=${OPTARG};;
         b) BATCH=true;;
         a) ALL=true;;
