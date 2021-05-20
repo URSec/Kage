@@ -4,3 +4,6 @@
 [submodule "workspace"]
 	path = workspace
 	url = git@github.com:URSec/Kage-FreeRTOS.git
+[submodule "newlib-cygwin"]
+	path = newlib-cygwin
+	url = git@github.com:chaosdefinition/newlib-cygwin.git
