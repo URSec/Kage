@@ -110,7 +110,10 @@ REACHABLE=$(
     do
         # Skip gadgets in trusted region and not part of Secure API
         grep $addr <<< $secure_api
-        if [[ "0x${addr}" -lt "0x${trusted_max}" && "0x${addr}" -gt "0x${trusted_base}" ]] ; then continue; fi
+        if [[ "0x${addr}" -lt "0x${trusted_max}" && "0x${addr}" -gt "0x${trusted_base}" ]]
+        then
+            continue
+        fi
         # Select gadget addresses aligned with the start of functions
         grep $addr <<< $functions
         # Select gadget addresses aligned with return targets
