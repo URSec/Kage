@@ -67,6 +67,8 @@ class CodeScanner(object):
                 }
 
     def scan(self):
+        offending = False
+
         for section in self.sections:
             text = self.__elf.get_section_by_name(section)
 
@@ -92,13 +94,15 @@ class CodeScanner(object):
                         i += 4
                         continue
 
-                    self.__scan_4byte_inst(inst, addr)
+                    offending |= self.__scan_4byte_inst(inst, addr)
                     if self.unaligned:
-                        self.__scan_2byte_inst(inst2, addr + 2)
+                        offending |= self.__scan_2byte_inst(inst2, addr + 2)
                     i += 4
                 else:
-                    self.__scan_2byte_inst(inst, addr)
+                    offending |= self.__scan_2byte_inst(inst, addr)
                     i += 2
+
+        return offending
 
     def __scan_2byte_inst(self, inst, addr):
         # Scan for CPS
@@ -106,6 +110,9 @@ class CodeScanner(object):
         cps_opcode_mask = 0xffec
         if (inst & cps_opcode_mask) == cps_opcode:
             print('[CS] CPS at 0x{:x}'.format(addr))
+            return True
+
+        return False
 
     def __scan_4byte_inst(self, inst, addr):
         # Scan for MSR
@@ -122,6 +129,7 @@ class CodeScanner(object):
             sysm = inst & 0xff
             if sysm in sysm_list:
                 print('[CS] MSR {:s} at 0x{:x}'.format(sysm_list[sysm], addr))
+                return True
 
         # Scan for BL (normal call) and B (tail call)
         bl_opcode = 0xf000d000
@@ -149,6 +157,9 @@ class CodeScanner(object):
                 assert dest in self.__funcs, 'Jump to the middle of trusted function'
                 if self.__funcs[dest]['name'] not in CodeScanner.SECURE_APIS:
                     print('[CS] {:s} {:s} at 0x{:x}'.format(opcode, self.__funcs[dest]['name'], addr))
+                    return True
+
+        return False
 
 
 def main():
@@ -170,7 +181,8 @@ def main():
 
     # Construct and run a code scanner
     scanner = CodeScanner(binary, sections, unaligned)
-    scanner.scan()
+    if scanner.scan():
+        exit(1)
 
 
 if __name__ == '__main__':
