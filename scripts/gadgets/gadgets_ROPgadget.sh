@@ -128,7 +128,7 @@ USABLE=$(
         # Skip current line if it's empty
         if [ -z "${addr}" ]; then continue; fi
         # Filter gadgets that rely on the Kage-protected link register
-        FOUND=$(grep $addr <<< $gadgets | egrep -v "lr$")
+        FOUND=$(grep "$addr :" <<< $gadgets | egrep -v "lr$")
         # Check if the address isn't filtered
         if [ ! -z "${FOUND}" ]
         then
