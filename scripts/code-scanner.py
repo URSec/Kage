@@ -40,6 +40,8 @@ class CodeScanner(object):
 
         'vPortEnterCritical',
         'vPortExitCritical',
+
+        'vMainUARTPrintString',
     ]
 
     def __init__(self, binary, sections, unaligned):
