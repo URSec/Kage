@@ -58,10 +58,10 @@ if [ ! "$BATCH" = true ] ; then echo "Collecting gadget addresses..."; fi
 if [ ! -z "${range}" ]
 then
     gadgets=$(ROPgadget --thumb --range "${range}" --binary ${binary} |
-                  egrep ^0x)
+                  egrep "^0x")
 else
     gadgets=$(ROPgadget --thumb --binary ${binary} |
-                  egrep ^0x)
+                  egrep "^0x")
 fi
 
 # No filtering. Directly emit ROPgadget output and exit
@@ -81,13 +81,15 @@ gadgets_addr=$(while IFS= read -r gadget; do
                        sed 's/^0*//'
                done <<< "$gadgets")
 # Identify Kage-trusted code region from binary
+if [ ! "$BATCH" = true ] ; then echo -n "Identifying trusted code region.."; fi
 trusted_region=$(readelf -S ${binary} |
-                   egrep -o privileged_f.*?$ |
+                   egrep -o "privileged_f.*?$" |
                    tr -s ' ' |
                    cut -d ' ' -f 3,5)
 trusted_base=$(echo $trusted_region | cut -f 1 -d ' ')
 trusted_max=$(echo $trusted_region | 
                   sed 's/ /+/' |
+                  tr "a-f" "A-F" |
                   awk '{print "obase=16;ibase=16;"$1}' |
                   bc);
 
