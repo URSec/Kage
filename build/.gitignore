@@ -5,3 +5,4 @@
 !.gitignore
 !build.llvm.sh
 !build.newlib.sh
+!build.compiler.rt.sh
