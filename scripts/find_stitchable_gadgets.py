@@ -52,16 +52,37 @@ def main(argv):
             
 
     # Set of regexes that make gadgets stitchable
-    stitchers = [r'pop.*pc', r'bx', r'bxne', r'bl', r'blx', r'^.+pc']
+    stitchers = [r'bx', r'bxne', r'bl', r'blx']
+    # Set of regexes that describe instructions writing to pc
+    pc_writers = [r'pop.*pc', r'ld[rm].*\spc']
+
     # instructions that are obviously stitchable
     for addr,gadget in gadgets.items():
-        # Obviously stitchable if gadget ends in a return/call/jump
+        found = False
+        # Stitchable if gadget ends in a return/call/jump to register
         for s in stitchers:
             x = re.compile(s)
             if x.match(gadget[-1]):
                 stitchable[addr] = gadget
+                found = True
                 break
-            
+        if found:
+            continue
+        # Check if gadget instructions write to pc
+        for p in pc_writers:
+            x = re.compile(p)
+            # Check each instruction in the current gadget
+            for instr in gadget:
+                if x.match(instr):
+                    stitchable[addr] = gadget
+                    pdb.set_trace()
+                    found = True
+                    break
+            if found:
+                break
+        if found:
+            continue
+
         # Check if branch to static address is the start of another gadget
         b = re.compile(r'b\.w.*#0x.*')
         if b.match(gadget[-1]):
