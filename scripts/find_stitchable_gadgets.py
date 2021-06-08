@@ -54,7 +54,7 @@ def main(argv):
     # Set of regexes that make gadgets stitchable
     stitchers = [r'bx', r'bxne', r'bl', r'blx']
     # Set of regexes that describe instructions writing to pc
-    pc_writers = [r'pop.*pc', r'ld[rm].*\spc']
+    pc_writers = [r'pop.*pc', r'ld[rm].*\spc', r'ldmia.*{.*pc.*}']
 
     # instructions that are obviously stitchable
     for addr,gadget in gadgets.items():
@@ -75,7 +75,6 @@ def main(argv):
             for instr in gadget:
                 if x.match(instr):
                     stitchable[addr] = gadget
-                    pdb.set_trace()
                     found = True
                     break
             if found:
