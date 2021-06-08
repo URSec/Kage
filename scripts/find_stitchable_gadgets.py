@@ -49,7 +49,7 @@ def main(argv):
             
 
     # Set of regexes that make gadgets stitchable
-    stitchers = [r'pop.*pc', r'bx lr', r'bl']
+    stitchers = [r'pop.*pc', r'bx', r'bxne', r'bl', r'blx', r'^.+pc']
     # instructions that are obviously stitchable
     for addr,gadget in gadgets.items():
         # Obviously stitchable if gadget ends in a return/call/jump
