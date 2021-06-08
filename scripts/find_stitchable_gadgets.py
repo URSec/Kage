@@ -59,6 +59,16 @@ def main(argv):
                 stitchable[addr] = gadget
                 break
             
+        # Check if branch to static address is the start of another gadget
+        b = re.compile(r'b\.w.*#0x.*')
+        if b.match(gadget[-1]):
+            # Check if branch destination is a gadget address
+            jumps_to = int(gadget[-1].split(" ")[-1][1:],16)
+            if jumps_to in gadgets:
+                stitchable[addr] = gadget
+                pdb.set_trace()
+                pass
+            
     # output stitchable gadgets
     for addr,gadget in stitchable.items():
         gadget_str = " ; ".join(gadget)
