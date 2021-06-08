@@ -9,16 +9,17 @@ import re
 
 gadgets = dict()
 stitchable = dict()
-
+not_stitchable = dict()
 def usage():
     print(f"./{os.path.basename(__file__)} -f <gadgetfile>")
 
 def main(argv):
 
     gadgetfilename = ""
+    INVERSE=False
     # Fetch arguments
     try :
-        opts, args = getopt.getopt(argv, "hf:")
+        opts, args = getopt.getopt(argv, "hif:")
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -28,6 +29,8 @@ def main(argv):
             sys.exit()
         elif opt == "-f":
             gadgetfilename = arg
+        if opt == "-i":
+            INVERSE=True
 
     if not gadgetfilename:
         usage()
@@ -66,14 +69,26 @@ def main(argv):
             jumps_to = int(gadget[-1].split(" ")[-1][1:],16)
             if jumps_to in gadgets:
                 stitchable[addr] = gadget
-                pdb.set_trace()
-                pass
+                continue
             
+    # output non-stitchable gadgets
+    if INVERSE:
+        # Remove stitchable gadgets from gadgets list
+        for addr in stitchable.keys():
+            gadgets.pop(addr)
+
+        for addr,gadget in gadgets.items():
+            gadget_str = " ; ".join(gadget)
+            print(f"{hex(addr)} : {gadget_str}")
+
     # output stitchable gadgets
-    for addr,gadget in stitchable.items():
-        gadget_str = " ; ".join(gadget)
-        print(f"{hex(addr)} : {gadget_str}")
-    
+    else :
+        for addr,gadget in stitchable.items():
+            gadget_str = " ; ".join(gadget)
+            print(f"{hex(addr)} : {gadget_str}")
+
+
+
     
 if __name__ == "__main__":
     main(sys.argv[1:])
