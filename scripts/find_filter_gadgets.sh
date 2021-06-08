@@ -81,7 +81,7 @@ gadgets_addr=$(while IFS= read -r gadget; do
                        sed 's/^0*//'
                done <<< "$gadgets")
 # Identify Kage-trusted code region from binary
-if [ ! "$BATCH" = true ] ; then echo -n "Identifying trusted code region.."; fi
+if [ ! "$BATCH" = true ] ; then echo -n "Identifying trusted code region... "; fi
 trusted_region=$(readelf -S ${binary} |
                    egrep -o "privileged_f.*?$" |
                    tr -s ' ' |
@@ -92,6 +92,7 @@ trusted_max=$(echo $trusted_region |
                   tr "a-f" "A-F" |
                   awk '{print "obase=16;ibase=16;"$1}' |
                   bc);
+if [ ! "$BATCH" = true ] ; then echo "0x${trusted_base}-0x${trusted_max}"; fi
 
 # Collect function start addresses
 if [ ! "$BATCH" = true ] ; then echo "Collecting function addresses..."; fi
