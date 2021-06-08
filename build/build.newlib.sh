@@ -117,6 +117,7 @@ CFLAGS_FOR_TARGET="$CFLAGS_FOR_TARGET -mexecute-only"
 CFLAGS_FOR_TARGET="$CFLAGS_FOR_TARGET -mllvm -enable-arm-silhouette-str2strt"
 CFLAGS_FOR_TARGET="$CFLAGS_FOR_TARGET -mllvm -enable-arm-silhouette-shadowstack"
 CFLAGS_FOR_TARGET="$CFLAGS_FOR_TARGET -mllvm -enable-arm-silhouette-cfi"
+CFLAGS_FOR_TARGET="$CFLAGS_FOR_TARGET -DSILHOUETTE"
 export CFLAGS_FOR_TARGET
 
 #
