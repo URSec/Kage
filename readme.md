@@ -14,7 +14,9 @@ paper](https://www.usenix.org/conference/usenixsecurity22/presentation/du).
 2. Use the build scripts (`build.llvm.sh`, `build.compiler.rt.sh`,
 `build.newlib.sh`) located in the `build` directory to build the LLVM-based
 compiler, the compiler-rt library, and the newlib C library.
-3. Open the System Workbench IDE and select the `workspace` directory as the
+3. Install the `pyelftools` Python module, required by our binary code scanner:
+`pip install pyelftools`.
+4. Open the System Workbench IDE and select the `workspace` directory as the
 workspace. Since FreeRTOS is built along with the application code,
 our projects include both our instrumented FreeRTOS and applications we used
 during our evaluation (CoreMark and microbenchmarks). Our workspace module also
