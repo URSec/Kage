@@ -35,6 +35,19 @@ Therefore, manually import the projects you wish to use by selecting
 select the `demos/st/stm32l475_discovery/ac6` directory for the IDE to find
 the project for the specific board model.
 
+## Reproducing experiment results using automated script
+To easily reproduce our experiments, we provide an automated script
+`scripts/run-benchmarks.py` to build the binaries and flash each one to
+the discovery board. The script requires Python 3.5 or later.
+1. Follow step 1-7 in Setting Up Kage.
+2. Install OpenOCD.
+3. Install a serial terminal and configure the parameters to match the
+STM32 discovery board. We use `minicom`.
+4. Open the serial terminal in another window.
+5. Enter the `scripts` directory and run `python run-benchmarks.py`.
+To learn about the script's optional arguments, run
+`python run-benchmarks.py -h`.
+
 ## Contacts
 Yufei Du: yufeidu@cs.unc.edu
 
