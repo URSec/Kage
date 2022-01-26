@@ -68,9 +68,6 @@ if __name__ == "__main__":
     # Print the output of subprocesses
     parser.add_argument('--verbose', action='store_true', default=False,
         help="Print all compilation and flashing logs.")
-    # Do not print code size results
-    parser.add_argument('--no_code_size', action='store_true', default=False,
-        help="Only run performance benchmark without showing code size.")
     # 
     parser.add_argument('--disable_cache', action='store_true', default=False,
         help="Disable instruction and data cache of the board (this option is only available when the --programs argument contains only \"coremark\")")
@@ -135,7 +132,7 @@ if __name__ == "__main__":
                     # with cache. 
                     if ('no-cache' in configDir.name) != (args.disable_cache):
                         continue
-                    print(f'Flashing {Fore.GREEN}', program, ' ',
+                    print(f'Flashing and running {Fore.GREEN}', program, ' ',
                         translateConfigName(configDir.name), f'{Style.RESET_ALL}')
                     # Execute OpenOCD on binary found in each build config
                     binPath = configDir.joinpath(configDir.name + '.elf')
@@ -270,15 +267,19 @@ if __name__ == "__main__":
             print(program, ':')
             for config in perfDict[program]:
                 perfDictPart = perfDict[program][config]
-                for bench in perfDictPart:
+                # Sort the order of benchmarks to print
+                benchList = sorted(list(perfDictPart.keys()))
+                for bench in benchList:
                     if program == 'coremark':
-                        print(bench, ':\t\t', perfDictPart[bench], ' iter/sec')
+                        print(bench.ljust(65), perfDictPart[bench], ' iter/sec')
                     else:
-                        print(bench, ':\t\t', perfDictPart[bench], ' cycles')
+                        print(bench.ljust(65), perfDictPart[bench], ' cycles')
         print("\n\nCode size results:")
         for program in sizeDict:
             print(program, ':')
             for config in sizeDict[program]:
                 sizeDictPart = sizeDict[program][config]
-                for bench in sizeDictPart:
-                    print(bench, ': \t', sizeDictPart[bench])
+                # Sort the order of benchmarks
+                benchList = sorted(list(sizeDictPart.keys()))
+                for bench in benchList:
+                    print(bench.ljust(60), sizeDictPart[bench])
