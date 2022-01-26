@@ -43,10 +43,9 @@ the discovery board. The script requires Python 3.5 or later.
 2. Install OpenOCD.
 3. Install a serial terminal and configure the parameters to match the
 STM32 discovery board. We use `minicom`.
-4. Install the `colorama` Python module, required by the automated
-script: `pip install colorama`.
-5. Open the serial terminal in another window.
-6. Enter the `scripts` directory and run `python run-benchmarks.py`.
+4. Install the `colorama` and `pyserial` Python modules, required by the
+automated script: `pip install colorama pyserial`.
+5. Enter the `scripts` directory and run `python run-benchmarks.py`.
 To learn about the script's optional arguments, run
 `python run-benchmarks.py -h`.
 
