@@ -87,8 +87,8 @@ if __name__ == "__main__":
     perfDict = {}
     sizeDict = {}
     
-    # Initialize serial interface with 1 minute of timeout
-    with serial.Serial('/dev/ttyACM0', 115200, timeout=60) as ser:
+    # Initialize serial interface with 2 minutes of timeout
+    with serial.Serial('/dev/ttyACM0', 115200, timeout=120) as ser:
         # Generate project paths
         for program in args.programs:
             if not program in PROJECTS:
@@ -180,7 +180,7 @@ if __name__ == "__main__":
                     # Read output
                     while True:
                         # Read output
-                        line = ser.readline()
+                        line = ser.readline().decode('utf-8')
                         if len(line) == 0:
                             # timeout
                             print("ERROR: Timeout waiting for results from the board.")
@@ -233,6 +233,30 @@ if __name__ == "__main__":
                                 sizeDict[program][config][confName] = \
                                     {'trusted':trusted, 'untrusted':untrusted}
                                 break
+                        if 'secure-api' in configDir.name:
+                            # Secure API microbenchmark
+                            if 'MPU checks' in line:
+                                t = int(line.split(': ')[1].split(' cycles')[0])
+                                perfDict[program][config]\
+                                    [confName + ': MPU region configuration'] = t
+                            if 'xVerifyTCB' in line:
+                                t = int(line.split(': ')[1].replace('\r', '')\
+                                    .replace('\n', ''))
+                                perfDict[program][config]\
+                                        [confName + ': task control block'] = t
+                            if 'xVerifyUntrustedData' in line:
+                                t = int(line.split(': ')[1].replace('\r', '')\
+                                    .replace('\n', ''))
+                                perfDict[program][config]\
+                                        [confName + ': other pointers'] = t
+                            if 'Exception priority' in line:
+                                t = int(line.split(': ')[1].replace('\r', '')\
+                                    .replace('\n', ''))
+                                perfDict[program][config]\
+                                        [confName + ': exception priority'] = t
+                                sizeDict[program][config][confName] = \
+                                    {'trusted':trusted, 'untrusted':untrusted}
+                                break
                         if 'coremark' in configDir.name:
                             # CoreMark
                             if 'Iterations/Sec' in line:
@@ -242,6 +266,19 @@ if __name__ == "__main__":
                                     {'trusted':trusted, 'untrusted':untrusted}
                                 break
         print("Performance results:")
-        print(perfDict)
-        print("Cod size results:")
-        print(sizeDict)
+        for program in perfDict:
+            print(program, ':')
+            for config in perfDict[program]:
+                perfDictPart = perfDict[program][config]
+                for bench in perfDictPart:
+                    if program == 'coremark':
+                        print(bench, ':\t\t', perfDictPart[bench], ' iter/sec')
+                    else:
+                        print(bench, ':\t\t', perfDictPart[bench], ' cycles')
+        print("\n\nCode size results:")
+        for program in sizeDict:
+            print(program, ':')
+            for config in sizeDict[program]:
+                sizeDictPart = sizeDict[program][config]
+                for bench in sizeDictPart:
+                    print(bench, ': \t', sizeDictPart[bench])
