@@ -28,12 +28,21 @@ workspace. Since FreeRTOS is built along with the application code,
 our projects include both our instrumented FreeRTOS and applications we used
 during our evaluation (CoreMark and microbenchmarks). Our workspace module also
 includes benchmark programs running on unmodified FreeRTOS (projects with the
-`freertos_` prefix).
+`freertos_` prefix). Beside our benchmark projects, we also include an empty
+template project, `template`, that includes only the Kage RTOS and two empty
+demo tasks, each with only a print statement.
 10. By default, System Workbench will not automatically import the projects.
 Therefore, manually import the projects you wish to use by selecting
 `File -> Open Projects from File System`. In each project directory,
 select the `demos/st/stm32l475_discovery/ac6` directory for the IDE to find
-the project for the specific board model.
+the project for the specific board model. If you would like to run your own
+application code on Kage, use the `template` project, which contains two empty
+tasks in `sil_demo.c`. You can write your application code in the same tasks
+or create new tasks. Note that if you increase the number of tasks running on
+the board, you need to also update `configTOTAL_TASKS` in
+`config_files/FreeRTOSConfig.h`. Since our implementation uses parallel shadow
+stack, on the STM32L475 Discovery board with 128KB of RAM, you can create up
+to 3 application tasks due to memory consumption.
 
 ## Reproducing experiment results using automated script
 To easily reproduce our experiments, we provide an automated script
