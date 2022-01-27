@@ -71,6 +71,9 @@ if __name__ == "__main__":
     # 
     parser.add_argument('--disable_cache', action='store_true', default=False,
         help="Disable instruction and data cache of the board (this option is only available when the --programs argument contains only \"coremark\")")
+    # (Optional) Write results to file
+    parser.add_argument('--outfile', type=Path, required=False,
+        help="Write the results to a file")
     # Get arguments
     args = parser.parse_args()
 
@@ -262,24 +265,31 @@ if __name__ == "__main__":
                                 sizeDict[program][config][confName] = \
                                     {'trusted':trusted, 'untrusted':untrusted}
                                 break
-        print("Performance results:")
+        # Generate result string
+        resultStr = "Performance results:\n"
         for program in perfDict:
-            print(program, ':')
+            resultStr += (program + ':\n')
             for config in perfDict[program]:
                 perfDictPart = perfDict[program][config]
                 # Sort the order of benchmarks to print
                 benchList = sorted(list(perfDictPart.keys()))
                 for bench in benchList:
+                    resultStr += (bench.ljust(65) + str(perfDictPart[bench]))
                     if program == 'coremark':
-                        print(bench.ljust(65), perfDictPart[bench], ' iter/sec')
+                        resultStr += ' iter/sec\n'
                     else:
-                        print(bench.ljust(65), perfDictPart[bench], ' cycles')
-        print("\n\nCode size results:")
+                        resultStr += ' cycles\n'
+        resultStr += '\nCode size results (bytes)'
         for program in sizeDict:
-            print(program, ':')
+            resultStr += (program + ':\n')
             for config in sizeDict[program]:
                 sizeDictPart = sizeDict[program][config]
                 # Sort the order of benchmarks
                 benchList = sorted(list(sizeDictPart.keys()))
                 for bench in benchList:
-                    print(bench.ljust(60), sizeDictPart[bench])
+                    resultStr += (bench.ljust(60) + str(sizeDictPart[bench]) + '\n')
+        print(resultStr)
+        if not args.outfile is None:
+            with args.outfile.open('w') as file:
+                file.write(resultStr)
+                print("Results stored to ", args.outfile.as_posix())
