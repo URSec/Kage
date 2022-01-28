@@ -22,7 +22,7 @@ CONFIG_TERMS = {'mpu': 'FreeRTOS with MPU enabled',
 DEVICE = 'demos/st/stm32l475_discovery/ac6'
 OCD_CMD = 'program $PATH$ reset exit'
 BUILD_CMD = \
-    '-nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild'\
+    '-nosplash --launcher.suppressErrors -application org.eclipse.cdt.managedbuilder.core.headlessbuild'\
     + ' -data $WORKSPACE$ -import $PROJPATH$ -cleanBuild $PROJECT$'
 
 # We use different configurations with unique names to enable different
@@ -279,7 +279,7 @@ if __name__ == "__main__":
                         resultStr += ' iter/sec\n'
                     else:
                         resultStr += ' cycles\n'
-        resultStr += '\nCode size results (bytes)'
+        resultStr += '\nCode size results (bytes)\n'
         for program in sizeDict:
             resultStr += (program + ':\n')
             for config in sizeDict[program]:
