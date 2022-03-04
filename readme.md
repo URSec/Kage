@@ -72,7 +72,7 @@ An example dispatcher is included in port.c
 Shadow Stacks are offset at 4092 bytes defined in portmacro.h 
 [(GitHub link)](https://github.com/URSec/Kage-FreeRTOS/blob/8b096c9ab1ac32ebaf6c4d54c5905c247ffd92cc/coremark/lib/FreeRTOS/portable/GCC/ARM_CM4_MPU/portmacro.h#L59)
 [(repo link)](./workspace/coremark/lib/FreeRTOS/portable/GCC/ARM_CM4_MPU/portmacro.h)
-due to the requirement of arm encoding four of arm instructions having immediate offset values inside the range 0-4095. 4092 is the highest 
+due to the requirement of encoding four of arm add instructions having immediate offset values inside the range 0-4095. 4092 is the highest 
 4 byte multiple in this range.
 
 If you add additional tests to microbenchmarks, coremark, or the template folder, you will need to modify
