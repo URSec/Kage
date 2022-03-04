@@ -10,22 +10,22 @@ For the details of Kage, check [our
 paper](https://www.usenix.org/conference/usenixsecurity22/presentation/du).
 
 ## Setting Up Kage
-2. Install [OpenSTM32 System Workbench](https://www.openstm32.org/HomePage)
-3. Install LLVM Clang compiler. 
-4. Install `arm-none-eabi` cross-compile tools. For Arch Linux, install the
+1. Install [OpenSTM32 System Workbench](https://www.openstm32.org/HomePage)
+2. Install LLVM Clang compiler. 
+3. Install `arm-none-eabi` cross-compile tools. For Arch Linux, install the
 `arm-none-eabi-gcc` and `arm-none-eabi-binutils` packages. For Fedora, install
 `arm-none-eabi-gcc-cs`.
-5. Clone this repo using `git clone --recurse-submodules https://github.com/URSec/Kage.git`. If you forget to include 
+4. Clone this repo using `git clone --recurse-submodules https://github.com/URSec/Kage.git`. If you forget to include 
 the `--recurse-submodules` flag, you can run `git submodule update --init` to download the submodules.
-9. Enter the `build` directory.
-10. Build our LLVM-based compiler using the build script `build.llvm.sh`.
-11. Build the instrumented newlib C library using the build script
+5. Enter the `build` directory.
+6. Build our LLVM-based compiler using the build script `build.llvm.sh`.
+7. Build the instrumented newlib C library using the build script
 `build.newlib.sh`.
-12. Build the instrumented compiler-rt using the build script
+8. Build the instrumented compiler-rt using the build script
 `build.compiler.rt.sh`.
-13. Install the `pyelftools` Python module, required by our binary code scanner:
+9. Install the `pyelftools` Python module, required by our binary code scanner:
 `pip install pyelftools`.
-14. Open the System Workbench IDE and select the `workspace` directory as the
+10. Open the System Workbench IDE and select the `workspace` directory as the
 workspace. Since FreeRTOS is built along with the application code,
 our projects include both our instrumented FreeRTOS and applications we used
 during our evaluation (CoreMark and microbenchmarks). Our workspace module also
@@ -33,7 +33,7 @@ includes benchmark programs running on unmodified FreeRTOS (projects with the
 `freertos_` prefix). Beside our benchmark projects, we also include an empty
 template project, `template`, that includes only the Kage RTOS and two empty
 demo tasks, each with only a print statement.
-15. By default, System Workbench will not automatically import the projects.
+11. By default, System Workbench will not automatically import the projects.
 Therefore, manually import the projects you wish to use by selecting
 `File -> Open Projects from File System`. In each project directory,
 select the `demos/st/stm32l475_discovery/ac6` directory for the IDE to find
@@ -76,7 +76,7 @@ due to the requirement of arm encoding four of arm instructions having immediate
 4 byte multiple in this range.
 
 If you add additional tests to microbenchmarks, coremark, or the template folder, you will need to modify
-the `run-benchmarks.py` script to accommodate running your benchmark test. You will need to update the NUM_*_TESTS 
+the `run-benchmarks.py` script to accommodate running your benchmark test. You will need to update the NUM\_\*\_TESTS 
 constants.
 
 ## Contacts
