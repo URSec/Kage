@@ -88,6 +88,8 @@ if __name__ == "__main__":
                         help="Write the results to a file")
     parser.add_argument('--build', action='store_true', default=False,
                         help='Runs make clean and build on all of the binaries. Needed for the first run.')
+    parser.add_argument('--tries', type=int, default=3,
+                        help="Number of tries when building a program. A value > 1 is recommended because the System Workbench's CMD interface is not very stable. Default: 3")
     # Get arguments
     args = parser.parse_args()
 
@@ -139,17 +141,26 @@ if __name__ == "__main__":
                 ac6Arg = args.ac6.as_posix() + ' ' + ac6Arg
 
                 # Run the build process
-                with subprocess.Popen(ac6Arg, stdout=std_dst, stderr=std_err,
-                                      bufsize=1, shell=True, text=True) as p:
-                    while p.poll() is None:
-                        if args.verbose:
-                            for line in p.stdout:
-                                print(f'{Style.DIM}', line, end='')
-                        sleep(.01)
-                    print(f'{Style.RESET_ALL}', end='')
-                    if p.returncode != 0:
-                        print(f'{Fore.RED}ERROR{Style.RESET_ALL}: Command \'{ac6Arg}\' '
-                              f'returned status code {p.returncode}. Terminating benchmarks...')
+                for i in range(args.tries):
+                    with subprocess.Popen(ac6Arg, stdout=std_dst, stderr=std_err,
+                                        bufsize=1, shell=True, text=True) as p:
+                        while p.poll() is None:
+                            if args.verbose:
+                                for line in p.stdout:
+                                    print(f'{Style.DIM}', line, end='')
+                            sleep(.01)
+                        print(f'{Style.RESET_ALL}', end='')
+                        if p.returncode != 0:
+                            # Building failed
+                            if i < args.tries - 1:
+                                print(f'{Fore.MAGENTA}WARNING{Style.RESET_ALL}: Command \'{ac6Arg}\' '
+                                    f'returned status code {p.returncode}. Retrying...')
+                            else:
+                                print(f'{Fore.RED}ERROR{Style.RESET_ALL}: Command \'{ac6Arg}\' '
+                                    f'returned status code {p.returncode}. Terminating benchmarks...')
+                        else:
+                            # Success
+                            break
 
             # Get the build directories for the binaries and also removes hidden directories
             build_directories = [d for d in projectPath.iterdir() if d.is_dir() and d.name[0] != '.']
