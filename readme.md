@@ -10,6 +10,9 @@ For the details of Kage, check [our
 paper](https://www.usenix.org/conference/usenixsecurity22/presentation/du).
 
 ## Setting Up Kage
+NOTE: We tested Kage on Fedora 35 and Arch Linux (April 2022). If you run
+into unknown errors on other OS or distributions, please consider trying
+on Fedora 35.
 1. Install [OpenSTM32 System Workbench](https://www.openstm32.org/HomePage)
 2. Install LLVM Clang compiler. 
 3. Install `arm-none-eabi` cross-compile tools. For Arch Linux, install the
@@ -54,13 +57,24 @@ the discovery board. The script requires Python 3.5 or later.
 2. Install OpenOCD.
 3. Install the `colorama` and `pyserial` Python modules, required by the
 automated script: `pip install colorama pyserial`.
-4. Enter the `scripts` directory and run `python run-benchmarks.py`.
+4. Enter the `scripts` directory and run `python run-benchmarks.py --build`.
 To learn about the script's optional arguments, run
-`python run-benchmarks.py -h`.
-5. The first time you run benchmarks, include the `--build` flag to build the binaries that
-are flashed onto the board. 
+`python run-benchmarks.py -h`. 
 6. Depending on your version of board, you may need to include the OpenOCD config file for that board. As an example,
 `-ocdcfg /usr/share/openocd/scripts/board/stm32l4discovery.cfg` will ensure OpenOCD can connect to the STM32L475 Discovery.
+
+## Troubleshooting
+1. The command line interface of System Workbench IDE is unstable and may throw
+    random errors occasionally. To circumvent this issue, our benchmark script
+    provides an option `--tries` to automatically re-run System Workbench on
+    error. By default, the benchmark script will try 3 times.
+2. If System Workbench still fails to build a program after many tries, please
+    navigate to the `workspace` directory and use `git status` to check file
+    integrity. On rare occasions, System Workbench's command line interface may
+    corrupt the configuration files when running on unsupported OS. If you see
+    that any `.project` or `.cproject` files are modified, please consider
+    switching to a Linux distribution we tested: Fedora 35 and Arch Linux
+    (April 2022).
 
 ## Implementation Notes to Developers
 The exception dispatcher is a proof of concept and will not be automatically added to developer created interrupts.
