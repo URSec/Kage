@@ -1,9 +1,9 @@
 [submodule "llvm-project"]
 	path = llvm-project
-	url = git@github.com:URSec/Silhouette-Compiler-Kage.git
+	url = https://github.com/URSec/Silhouette-Compiler-Kage.git
 [submodule "workspace"]
 	path = workspace
-	url = git@github.com:URSec/Kage-FreeRTOS.git
+	url = https://github.com/URSec/Kage-FreeRTOS.git
 [submodule "newlib-cygwin"]
 	path = newlib-cygwin
-	url = git@github.com:chaosdefinition/newlib-cygwin.git
+	url = https://github.com/URSec/newlib-cygwin.git
