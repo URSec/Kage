@@ -60,8 +60,43 @@ automated script: `pip install colorama pyserial`.
 4. Enter the `scripts` directory and run `python run-benchmarks.py --build`.
 To learn about the script's optional arguments, run
 `python run-benchmarks.py -h`. 
-6. Depending on your version of board, you may need to include the OpenOCD config file for that board. As an example,
-`-ocdcfg /usr/share/openocd/scripts/board/stm32l4discovery.cfg` will ensure OpenOCD can connect to the STM32L475 Discovery.
+Depending on your version of board, you may need to include the OpenOCD config file for that board. As an example,
+`--ocdcfg /usr/share/openocd/scripts/board/stm32l4discovery.cfg` will ensure OpenOCD can connect to the STM32L475 Discovery.
+5. If you want to reproduce the CoreMark experiments without caching, run
+`python run-benchmarks.py --build --disable_cache`.
+
+In addition to the performance and code size experiments, we also provide
+a script that uses ROPGadget to find gadgets of a binary file. Given a
+binary file, the script can find all gadgets, reachable gadgets when Kage
+is applied, and the number of privileged stores (i.e., regular store
+instructions and push instructions) in reachable gadgets. In the paper,
+we also report the number of stitchable gadgets (see Section 6.2 and Table
+7). However, we had to manually inspect the reachable gadgets to determine
+if they are actually stitchable under Kage's return address integrity
+guarantee. We provide a script `find_stitchable_gadgets.py` that filters
+out gadgets that are not stitchable even without Kage. For the
+rest of the gadgets, the user needs to manually inspect each of them to
+see if it is stitchable.
+
+To reproduce security evaluation:
+1. Follow the above steps to build and run the benchmark programs in order to
+generate the required binary files.
+2. If not already, enter the `Kage/scripts` directory.
+3. Run the `run-gadgets.py` script with the following arguments to analyze
+the FreeRTOS (baseline) binary of CoreMark with 3 threads:
+`--preset --mode freertos`. Optionally, the script can write the list of
+all gadgets (using `--out_total <path>` argument) and the list of reachable
+gadgets (using `--out_reachable <path>`) for further inspection.
+4. Run the `run-gadgets.py` script with the following arguments to analyze
+the Kage binary of CoreMark with 3 threads:
+`--preset --mode kage`. Likewise, the script can write the list of all
+gadgets and reachable gadgets using the same arguments as the previous step.
+5. (Only accurate for FreeRTOS binaries) If you have the output file of
+reachable gadgets, you can run the `find_stitchable_gadgets.py` script to
+find the list of stitchable gadgets for the FreeRTOS binary using the
+following argument: `-f <path>`. Note that this script prints the list
+of gadgets directly to the terminal.
+
 
 ## Troubleshooting
 1. The command line interface of System Workbench IDE is unstable and may throw
