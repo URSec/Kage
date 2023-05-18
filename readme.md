@@ -8,6 +8,23 @@ Discovery kit.
 
 For the details of Kage, check [our
 paper](https://www.usenix.org/conference/usenixsecurity22/presentation/du).
+To cite Kage, you can use the following BibTeX entry:
+```bibtex
+@inproceedings{Kage:UsenixSec22,
+  author = {Du, Yufei and Shen, Zhuojia and Dharsee, Komail and Zhou, Jie and Walls, Robert J. and Criswell, John},
+  title = {Holistic Control-Flow Protection on Real-Time Embedded Systems with {Kage}},
+  booktitle = {Proceedings of the 31st USENIX Security Symposium},
+  series = {Security '22},
+  year = {2022},
+  isbn = {978-1-939133-31-1},
+  location = {Boston, MA, USA},
+  pages = {2281--2298},
+  numpages = {18},
+  url = {https://www.usenix.org/conference/usenixsecurity22/presentation/du},
+  publisher = {USENIX Association},
+  address = {Berkeley, CA, USA},
+}
+```
 
 ## Setting Up Kage
 NOTE: We tested Kage on Fedora 35 and Arch Linux (April 2022). If you run
